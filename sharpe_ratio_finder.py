@@ -20,12 +20,12 @@ import matplotlib.pyplot as plt                        # Basic plot library.
 plt.style.use('ggplot')                                # Make plots look nice.
 
 
-def prices(tickers,start_date,end_date):
+def prices(tickers,start_date,end_date,trading_days):
     prices  = tiingo.get_dataframe(tickers, start_date, end_date, metric_name='adjClose')
     prices.index = pd.to_datetime(prices.index).tz_convert(None)
     return prices
 
-def returns(tickers,start_date,end_date):
+def returns(tickers,start_date,end_date,trading_days):
     prices  = tiingo.get_dataframe(tickers, start_date, end_date, metric_name='adjClose')
     prices.index = pd.to_datetime(prices.index).tz_convert(None) 
     
@@ -34,7 +34,7 @@ def returns(tickers,start_date,end_date):
     
     return r
 
-def rp(tickers,start_date,end_date):
+def rp(tickers,start_date,end_date,trading_days):
     # first pull the data you need from tiingo
     prices  = tiingo.get_dataframe(tickers, start_date, end_date, metric_name='adjClose')
     prices.index = pd.to_datetime(prices.index).tz_convert(None) 
@@ -46,11 +46,11 @@ def rp(tickers,start_date,end_date):
     #assuming the risk free rate for now
     #gathering important statistics for analysis
     rf = 0.011
-    risk_premiums = r.mean() * 252 - rf       
+    risk_premiums = r.mean() * trading_days - rf       
     
     return risk_premiums
 
-def vol(tickers,start_date,end_date):
+def vol(tickers,start_date,end_date,trading_days):
         # first pull the data you need from tiingo
     prices  = tiingo.get_dataframe(tickers, start_date, end_date, metric_name='adjClose')
     prices.index = pd.to_datetime(prices.index).tz_convert(None) 
@@ -59,11 +59,11 @@ def vol(tickers,start_date,end_date):
     #find the returns of the tickers in prices
     r = prices.pct_change()
     #find the volatility      
-    vol           = r.std()  * 252**0.5
+    vol           = r.std()  * trading_days**0.5
     
     return vol
 
-def cov(tickers,start_date,end_date):
+def cov(tickers,start_date,end_date,trading_days):
         # first pull the data you need from tiingo
     prices  = tiingo.get_dataframe(tickers, start_date, end_date, metric_name='adjClose')
     prices.index = pd.to_datetime(prices.index).tz_convert(None) 
@@ -72,7 +72,7 @@ def cov(tickers,start_date,end_date):
     #find the returns of the tickers in prices
     r = prices.pct_change()
     #find the covariance      
-    cov           = r.cov()  * 252
+    cov           = r.cov()  * trading_days
     
     return cov
 
@@ -283,7 +283,7 @@ def max_sharpe_volatility(tickers,risk_premiums,vol,cov):
     max_sharpe_volatility = random[(random['sharpe'] == random.sharpe.max())].Volatility
     return max_sharpe_volatility
     
-def var_weight_plot(base_tickers,var_ticker,base_weights,start_date,end_date,n):
+def var_weight_plot(base_tickers,var_ticker,base_weights,start_date,end_date,n,trading_days):
     base_weights = np.array(base_weights)
     
     
@@ -321,8 +321,8 @@ def var_weight_plot(base_tickers,var_ticker,base_weights,start_date,end_date,n):
         total_ret = var_weighted_return + base_weighted_return
         total_ret = pd.DataFrame(total_ret)
     
-        return_average    = total_ret.mean()*252
-        return_volatility = total_ret.std()*252**0.5
+        return_average    = total_ret.mean()*trading_days
+        return_volatility = total_ret.std()*trading_days**0.5
         return_rp         = return_average - 0.011
     
         test_port_returns.append(return_average)
